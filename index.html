@@ -1,0 +1,237 @@
+local RPS = game:GetService("ReplicatedStorage")
+local TS = game:GetService("TweenService")
+local USI = game:GetService("UserInputService")
+local CS = game:GetService("CollectionService")
+local SS = game:GetService("SoundService")
+local Players = game:GetService("Players")
+local ss = game:GetService("ServerStorage")
+
+
+local DashRE = RPS.UIEvents.DashRE
+local ShieldRE = RPS.UIEvents.shieldRE
+local HookRE = RPS.UIEvents.HookRE
+
+local Blur = game.Lighting.Blur
+local DashSound = SS:WaitForChild("Dash")
+
+local BotsFold = workspace:WaitForChild("Bots")
+
+local HookConnection
+local ShieldConnection
+local DashConnection
+
+
+local function DASH(player)
+		
+	local SizeInt = ss.PlayersScoreFol:FindFirstChild(player.Name):FindFirstChild("Size")
+	local Dashint = ss.PlayersScoreFol:FindFirstChild(player.Name):FindFirstChild("DashInt")
+	local Dashint2 = RPS.PlayerScoreFoldRPS:FindFirstChild(player.Name):FindFirstChild("DashInt")
+	
+	if Dashint.Value < 1 then return end
+	
+	local character = workspace:FindFirstChild(player.Name)
+	local HRP = character.HumanoidRootPart
+	
+	local playerBlob = character:FindFirstChild(player.Name)
+	
+	local AttachmentTop = playerBlob.DashEffect.AttachmentTop
+	
+	local NewPos = SizeInt.Value >= 2000 and AttachmentTop.Position + Vector3.new(0,playerBlob.Size.Y/2,0) or AttachmentTop.Position
+	
+	if NewPos.Y <= playerBlob.Size.Y then
+		
+		AttachmentTop.Position = SizeInt.Value >= 2000 and AttachmentTop.Position + Vector3.new(0,playerBlob.Size.Y/2,0) or AttachmentTop.Position
+	end
+
+	local Trail = character:FindFirstChild(player.Name).DashEffect.Trail
+	Trail.Color = ColorSequence.new(playerBlob.Color,playerBlob.Color)
+	Trail.Enabled = true
+	Trail.Lifetime = SizeInt.Value >= 2000 and 0.8 or 0.3
+	
+	local slide = Instance.new("BodyVelocity")
+	slide.MaxForce = Vector3.new(1,0,1) * 30000000
+	slide.Velocity = SizeInt.Value >= 2000 and character.HumanoidRootPart.CFrame.lookVector * 250 or character.HumanoidRootPart.CFrame.lookVector * 100
+	slide.Velocity = SizeInt.Value >= 10000 and character.HumanoidRootPart.CFrame.lookVector * 300 or slide.Velocity
+	slide.Velocity = SizeInt.Value >= 50000 and character.HumanoidRootPart.CFrame.lookVector * 400 or slide.Velocity
+	slide.Velocity = SizeInt.Value >= 100000 and character.HumanoidRootPart.CFrame.lookVector * 500 or slide.Velocity
+	slide.Parent = character.HumanoidRootPart
+	
+	DashSound:Play()
+	for count = 1, 8 do
+		wait(0.1)
+		slide.Velocity*= 0.7
+	end
+	
+	slide.Destroying:Connect(function()
+		
+		Trail.Enabled = false
+	end)
+	
+	slide:Destroy()
+	
+	Blur.Size = 5
+	TS:Create(Blur,TweenInfo.new(1,0,0),{Size = 0}):Play()
+	game.Debris:AddItem(Blur,1)
+	
+	Dashint.Value -= 1
+	Dashint2.Value -= 1
+	return
+end
+
+
+local function SHIELD(player)
+	
+	local ShieldInt = ss.PlayersScoreFol:FindFirstChild(player.Name):FindFirstChild("ShieldInt")
+	local ShieldInt2 = RPS.PlayerScoreFoldRPS:FindFirstChild(player.Name):FindFirstChild("ShieldInt")
+	
+	if ShieldInt.Value < 1 then return end
+	
+	local charater = workspace:FindFirstChild(player.Name)
+	local HRP = charater.HumanoidRootPart
+	
+	local playerBlob = charater:FindFirstChild(player.Name)
+	
+	local Shield = workspace:FindFirstChild(player.Name):FindFirstChild(player.Name).Shield
+	
+	Shield.Value = true
+	
+	local ForceField = Instance.new("Part")
+	ForceField.Shape = Enum.PartType.Ball
+	ForceField.Color = Color3.fromRGB(3, 14, 165)
+	ForceField.Material = Enum.Material.ForceField
+	ForceField.CFrame = HRP.CFrame
+	ForceField.Size = playerBlob.Size + Vector3.new(2,2,2)
+	ForceField.CanCollide = false
+	
+	local weld = Instance.new("Weld",HRP)
+	weld.Part0 = HRP
+	weld.Part1 = ForceField
+	
+	ForceField.Parent = HRP
+	
+	game.Debris:AddItem(weld,10)
+	game.Debris:AddItem(ForceField,10)
+	
+	ShieldInt.Value -= 1
+	ShieldInt2.Value -= 1
+	
+	task.wait(10)
+	
+	Shield.Value = false
+	return
+end
+
+
+local function HOOK(player)
+	
+	local HookInt = ss.PlayersScoreFol:FindFirstChild(player.Name):FindFirstChild("HookInt")
+	local HookInt2 = RPS.PlayerScoreFoldRPS:FindFirstChild(player.Name):FindFirstChild("HookInt")
+	
+	if HookInt.Value < 1 then return end
+	
+	local charater = workspace:FindFirstChild(player.Name)
+	local HRP = charater.HumanoidRootPart
+	
+	local playerBlob = charater:FindFirstChild(player.Name)
+	
+	local HookGun = RPS.HookGun:Clone()
+	HookGun.CFrame = charater.PrimaryPart.CFrame + Vector3.new(0,(playerBlob.Size.Y * 0.25),0) + HRP.CFrame.RightVector * playerBlob.Size.X/1.7
+	
+	local weld = Instance.new("WeldConstraint",playerBlob)
+	weld.Part0 = playerBlob
+	weld.Part1 = HookGun
+	HookGun.Parent = playerBlob
+	
+	HookGun.AncestryChanged:Connect(function()
+		HookGun:Remove()
+	end)
+	
+	local target
+	HookRE.HookLaunch.OnServerEvent:Connect(function(player,enemy)
+		
+		target = enemy
+		
+		if target then
+			
+			local targetSize = ss.PlayersScoreFol:FindFirstChild(target.Name):FindFirstChild("Size")
+			local playerSize = ss.PlayersScoreFol:FindFirstChild(player.Name):FindFirstChild("Size")
+			
+			if targetSize.Value < playerSize.Value then
+				
+				local Attach0 = Instance.new("Attachment",target)
+				local Attach1 = Instance.new("Attachment",playerBlob)
+				local Rope = Instance.new("RopeConstraint",playerBlob)
+				Rope.Attachment0 = Attach0
+				Rope.Attachment1 = Attach1
+				Rope.Visible = true
+
+				local TargetPosition = target.Position
+				local playerPos = HRP.Position
+
+				local XDistance = math.abs(TargetPosition.X - playerPos.X)
+				local ZDistance = math.abs(TargetPosition.Z - playerPos.Z)
+
+				if XDistance > ZDistance then
+					Rope.Length = XDistance
+				else
+					Rope.Length = ZDistance
+				end
+				
+				playerBlob.Touched:Connect(function(hit)
+
+					if hit.Name == target.Name then
+						Attach0:Remove()
+						Attach1:Remove()
+						Rope:Remove()
+						HookGun:Remove()
+						return
+					end
+				end)
+
+				if target:IsDescendantOf(BotsFold) then
+					
+					for _, char in pairs(target.Parent:GetChildren()) do
+
+						if char:isA("Character") then
+							local Hum = char.Humanoid
+							Hum.WalkSpeed = 0
+							print("is a character cant walk now")
+						else
+							if CS:HasTag(char,"Ball") then
+
+								char.Anchored = true
+							end
+						end
+					end
+				else
+					if target:IsDescendantOf(Players) then
+
+						local Hum = target.Parent.Humanoid
+						Hum.WalkSpeed = 0
+					end
+				end
+				
+				local targetPreParent = target.Parent
+
+				while wait(0.1) do
+
+					TS:Create(target,TweenInfo.new(1,Enum.EasingStyle.Linear,Enum.EasingDirection.Out),{Position = HRP.Position}):Play()
+					TS:Create(Rope,TweenInfo.new(1,Enum.EasingStyle.Linear,Enum.EasingDirection.Out),{Length = 0}):Play()
+					
+					if target.Parent ~= targetPreParent then
+						break
+					end
+				end
+			end
+		end
+	end)
+	HookRE.HookLaunch:FireClient(player)
+	HookInt.Value -= 1
+	HookInt2.Value -= 1
+	return
+end
+
+
+DashRE.OnServerInvoke = DASH
+ShieldRE.OnServerInvoke = SHIELD
+HookRE.OnServerInvoke = HOOK
