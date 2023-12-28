@@ -12,7 +12,6 @@ local ShieldRE = RPS.UIEvents.shieldRE
 local HookRE = RPS.UIEvents.HookRE
 
 local Blur = game.Lighting.Blur
-local DashSound = SS:WaitForChild("Dash")
 
 local BotsFold = workspace:WaitForChild("Bots")
 
@@ -56,7 +55,6 @@ local function DASH(player)
 	slide.Velocity = SizeInt.Value >= 100000 and character.HumanoidRootPart.CFrame.lookVector * 500 or slide.Velocity
 	slide.Parent = character.HumanoidRootPart
 
-	DashSound:Play()
 	for count = 1, 8 do
 		wait(0.1)
 		slide.Velocity*= 0.7
@@ -152,7 +150,7 @@ local function HOOK(player)
 		target = enemy
 
 		if target then
-			
+
 			target.Massless = true
 
 			local targetSize = ss.PlayersScoreFol:FindFirstChild(target.Name):FindFirstChild("Size")
