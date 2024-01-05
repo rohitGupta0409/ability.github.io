@@ -100,6 +100,7 @@ local function SHIELD(player)
 	ForceField.CFrame = HRP.CFrame
 	ForceField.Size = playerBlob.Size + Vector3.new(2,2,2)
 	ForceField.CanCollide = false
+	ForceField.Name= "ForceField"
 
 	local weld = Instance.new("Weld",HRP)
 	weld.Part0 = HRP
