@@ -49,7 +49,7 @@ local function DASH(player)
 
 	local slide = Instance.new("BodyVelocity")
 	slide.MaxForce = Vector3.new(1,0,1) * 30000000
-	slide.Velocity = SizeInt.Value >= 2000 and character.HumanoidRootPart.CFrame.lookVector * 250 or character.HumanoidRootPart.CFrame.lookVector * 100
+	slide.Velocity = SizeInt.Value >= 2000 and character.HumanoidRootPart.CFrame.lookVector * 500 or character.HumanoidRootPart.CFrame.lookVector * 100
 	slide.Velocity = SizeInt.Value >= 10000 and character.HumanoidRootPart.CFrame.lookVector * 300 or slide.Velocity
 	slide.Velocity = SizeInt.Value >= 50000 and character.HumanoidRootPart.CFrame.lookVector * 400 or slide.Velocity
 	slide.Velocity = SizeInt.Value >= 100000 and character.HumanoidRootPart.CFrame.lookVector * 500 or slide.Velocity
