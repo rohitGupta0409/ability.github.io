@@ -1,3 +1,6 @@
+
+
+
 local RPS = game:GetService("ReplicatedStorage")
 local TS = game:GetService("TweenService")
 local USI = game:GetService("UserInputService")
@@ -48,8 +51,8 @@ local function DASH(player)
 	Trail.Lifetime = SizeInt.Value >= 2000 and 0.8 or 0.3
 
 	local slide = Instance.new("BodyVelocity")
-	slide.MaxForce = Vector3.new(1,0,1) * 30000000
-	slide.Velocity = SizeInt.Value >= 2000 and character.HumanoidRootPart.CFrame.lookVector * 500 or character.HumanoidRootPart.CFrame.lookVector * 100
+	slide.MaxForce = Vector3.new(1,0,1) * 300000000
+	slide.Velocity = SizeInt.Value >= 2000 and character.HumanoidRootPart.CFrame.lookVector * 200 or character.HumanoidRootPart.CFrame.lookVector * 100
 	slide.Velocity = SizeInt.Value >= 10000 and character.HumanoidRootPart.CFrame.lookVector * 300 or slide.Velocity
 	slide.Velocity = SizeInt.Value >= 50000 and character.HumanoidRootPart.CFrame.lookVector * 400 or slide.Velocity
 	slide.Velocity = SizeInt.Value >= 100000 and character.HumanoidRootPart.CFrame.lookVector * 500 or slide.Velocity
